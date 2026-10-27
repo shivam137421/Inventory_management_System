@@ -82,7 +82,7 @@ jobs:
         run: |
           echo "Scanning repository files for sensitive/secret files..."
           
-          FORBIDDEN_FILES=$(find . -type f \( -name "*.env" -o -name ".env.*" -o -name "*.pem" -o -name "*.key" -o -name "*.secret" -o -name "application-local.properties" -o -name "*.jks" -o -name "*.p12" \) ! -path "*/node_modules/*" ! -path "*/.git/*")
+          FORBIDDEN_FILES=$(find . -type f \( -name "*.env" -o -name ".env.*" -o -name "*.pem" -o -name "*.key" -o -name "*.secret" -o -name "application-local.properties" -o -name "*.jks" -o -name "*.p12" \) ! -name "*.example" ! -name ".env.example" ! -path "*/node_modules/*" ! -path "*/.git/*")
           
           if [ -n "$FORBIDDEN_FILES" ]; then
             echo "ERROR: Found forbidden secret/environment file(s) tracked in repository:"
