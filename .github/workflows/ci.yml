@@ -23,9 +23,17 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Run Backend Tests
+        working-directory: ./backend
+        run: mvn -B test
+        env:
+          DB_URL: jdbc:mysql://localhost:3306/inventory
+          DB_USERNAME: root
+          DB_PASSWORD: ""
+
       - name: Build and Package Backend
         working-directory: ./backend
-        run: mvn -B clean package -DskipTests
+        run: mvn -B package -DskipTests
         env:
           DB_URL: jdbc:mysql://localhost:3306/inventory
           DB_USERNAME: root

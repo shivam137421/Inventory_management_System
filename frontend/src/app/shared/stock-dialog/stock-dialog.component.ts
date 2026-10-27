@@ -14,14 +14,19 @@ import { extractErrorMessage } from '../../core/http-error.helper';
       <div class="modal-dialog">
         <div class="modal-header">
           <h3 class="modal-title">
-            {{ actionType === 'IN' ? 'Stock IN' : 'Stock OUT' }} — {{ product.name }}
+            <ng-container [ngSwitch]="actionType">
+              <span *ngSwitchCase="'IN'">Stock IN</span>
+              <span *ngSwitchCase="'OUT'">Stock OUT</span>
+              <span *ngSwitchCase="'ADJUST'">Manual Stock Adjustment</span>
+            </ng-container>
+            — {{ product.name }}
           </h3>
           <button type="button" class="btn btn-sm btn-secondary" (click)="cancel.emit()">✕</button>
         </div>
 
-        <div style="margin-bottom: 16px; font-size: 13px; color: var(--text-muted);">
+        <div style="margin-bottom: 16px; font-size: 13px; color: var(--text-muted); background: #faf9f6; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
           <div><strong>SKU:</strong> {{ product.sku }}</div>
-          <div><strong>Current Stock:</strong> {{ product.quantity }} units</div>
+          <div><strong>Current Stock:</strong> {{ product.quantity }} {{ product.unit || 'pcs' }}</div>
         </div>
 
         <div *ngIf="errorMessage" class="banner banner-error" style="margin-bottom: 16px;">
@@ -29,8 +34,25 @@ import { extractErrorMessage } from '../../core/http-error.helper';
         </div>
 
         <form [formGroup]="stockForm" (ngSubmit)="onSubmit()">
+          <!-- Direction selector for ADJUST mode -->
+          <div *ngIf="actionType === 'ADJUST'" class="form-group">
+            <label class="form-label">Adjustment Direction *</label>
+            <div style="display: flex; gap: 16px; margin-top: 6px;">
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
+                <input type="radio" value="IN" formControlName="direction" />
+                <span>Add / Found Stock (+)</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
+                <input type="radio" value="OUT" formControlName="direction" />
+                <span>Deduct / Damaged Stock (-)</span>
+              </label>
+            </div>
+          </div>
+
           <div class="form-group">
-            <label class="form-label" for="stockQuantity">Quantity *</label>
+            <label class="form-label" for="stockQuantity">
+              {{ actionType === 'ADJUST' ? 'Adjustment Quantity (' + (product.unit || 'pcs') + ') *' : 'Quantity (' + (product.unit || 'pcs') + ') *' }}
+            </label>
             <input
               id="stockQuantity"
               type="number"
@@ -48,15 +70,20 @@ import { extractErrorMessage } from '../../core/http-error.helper';
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="stockNote">Note (Optional)</label>
+            <label class="form-label" for="stockNote">
+              {{ actionType === 'ADJUST' ? 'Reason / Audit Note *' : 'Note (Optional)' }}
+            </label>
             <input
               id="stockNote"
               type="text"
               class="form-control"
               formControlName="note"
-              placeholder="e.g. Restock shipment / Order dispatch"
+              [placeholder]="actionType === 'ADJUST' ? 'e.g. Physical inventory count correction' : 'e.g. Restock shipment / Order dispatch'"
               maxlength="255"
             />
+            <div *ngIf="actionType === 'ADJUST' && stockForm.get('note')?.invalid && (stockForm.get('note')?.touched || submitted)" class="form-error">
+              <span *ngIf="stockForm.get('note')?.errors?.['required']">Reason is required for manual stock adjustment.</span>
+            </div>
           </div>
 
           <div class="modal-footer">
@@ -64,7 +91,7 @@ import { extractErrorMessage } from '../../core/http-error.helper';
               Cancel
             </button>
             <button type="submit" class="btn btn-primary" [disabled]="submitting">
-              {{ submitting ? 'Submitting...' : (actionType === 'IN' ? 'Add Stock' : 'Remove Stock') }}
+              {{ submitting ? 'Submitting...' : (actionType === 'IN' ? 'Add Stock' : (actionType === 'OUT' ? 'Remove Stock' : 'Apply Adjustment')) }}
             </button>
           </div>
         </form>
@@ -74,7 +101,7 @@ import { extractErrorMessage } from '../../core/http-error.helper';
 })
 export class StockDialogComponent {
   @Input({ required: true }) product!: Product;
-  @Input({ required: true }) actionType!: 'IN' | 'OUT';
+  @Input({ required: true }) actionType!: 'IN' | 'OUT' | 'ADJUST';
   @Output() success = new EventEmitter<Product>();
   @Output() cancel = new EventEmitter<void>();
 
@@ -89,9 +116,17 @@ export class StockDialogComponent {
     private cdr: ChangeDetectorRef
   ) {
     this.stockForm = this.fb.group({
+      direction: ['IN'],
       quantity: [null, [Validators.required, Validators.min(1), Validators.max(1000000)]],
       note: ['']
     });
+  }
+
+  ngOnInit() {
+    if (this.actionType === 'ADJUST') {
+      this.stockForm.get('note')?.setValidators([Validators.required, Validators.maxLength(255)]);
+      this.stockForm.get('note')?.updateValueAndValidity();
+    }
   }
 
   onBackdropClick(event: MouseEvent) {
@@ -108,18 +143,30 @@ export class StockDialogComponent {
       return;
     }
 
-    const { quantity, note } = this.stockForm.value;
-    const request = {
-      quantity: Number(quantity),
-      note: note ? note.trim() : undefined
-    };
+    const { direction, quantity, note } = this.stockForm.value;
+    const numQty = Number(quantity);
 
     this.submitting = true;
     this.cdr.detectChanges();
 
-    const op$ = this.actionType === 'IN'
-      ? this.productService.stockIn(this.product.id, request)
-      : this.productService.stockOut(this.product.id, request);
+    let op$;
+    if (this.actionType === 'ADJUST') {
+      const change = direction === 'OUT' ? -numQty : numQty;
+      op$ = this.productService.adjustStock(this.product.id, {
+        quantityChange: change,
+        reason: note.trim()
+      });
+    } else if (this.actionType === 'IN') {
+      op$ = this.productService.stockIn(this.product.id, {
+        quantity: numQty,
+        note: note ? note.trim() : undefined
+      });
+    } else {
+      op$ = this.productService.stockOut(this.product.id, {
+        quantity: numQty,
+        note: note ? note.trim() : undefined
+      });
+    }
 
     op$.subscribe({
       next: (updatedProduct) => {

@@ -301,6 +301,17 @@ a:hover {
   background-color: var(--status-out-of-stock-bg);
 }
 
+.badge-info {
+  color: #1e40af;
+  background-color: #dbeafe;
+}
+
+.badge-neutral {
+  color: #374151;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+}
+
 /* Message Banners */
 .banner {
   padding: 10px 14px;
@@ -373,3 +384,36 @@ a:hover {
   gap: 10px;
   margin-top: 20px;
 }
+
+/* Printable Invoice & Receipt */
+.invoice-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 24px;
+}
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+  }
+  .app-header,
+  .page-header,
+  .btn,
+  .modal-overlay:not(.print-active),
+  .no-print {
+    display: none !important;
+  }
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  .printable-area {
+    display: block !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+

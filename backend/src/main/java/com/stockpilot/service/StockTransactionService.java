@@ -18,19 +18,25 @@ public class StockTransactionService {
         this.stockTransactionRepository = stockTransactionRepository;
     }
 
+    private Long resolveBusinessId() {
+        Long bid = com.stockpilot.security.TenantContext.getCurrentBusinessId();
+        return bid != null ? bid : 1L;
+    }
+
     @Transactional(readOnly = true)
     public List<TransactionResponse> getTransactions(TransactionType type, Long productId) {
-        List<StockTransaction> transactions;
+        return getTransactions(type, productId, null, null);
+    }
 
-        if (type != null && productId != null) {
-            transactions = stockTransactionRepository.findByProductIdAndTransactionTypeOrderByCreatedAtDesc(productId, type);
-        } else if (type != null) {
-            transactions = stockTransactionRepository.findByTransactionTypeOrderByCreatedAtDesc(type);
-        } else if (productId != null) {
-            transactions = stockTransactionRepository.findByProductIdOrderByCreatedAtDesc(productId);
-        } else {
-            transactions = stockTransactionRepository.findAllByOrderByCreatedAtDesc();
-        }
+    @Transactional(readOnly = true)
+    public List<TransactionResponse> getTransactions(
+            TransactionType type,
+            Long productId,
+            java.time.LocalDateTime startDate,
+            java.time.LocalDateTime endDate) {
+        Long businessId = resolveBusinessId();
+        List<StockTransaction> transactions = stockTransactionRepository.findTransactionsFiltered(
+                businessId, productId, type, startDate, endDate);
 
         return transactions.stream()
                 .map(this::mapToResponse)
@@ -46,6 +52,9 @@ public class StockTransactionService {
                 transaction.getTransactionType(),
                 transaction.getQuantity(),
                 transaction.getNote(),
+                transaction.getReferenceType(),
+                transaction.getReferenceId(),
+                transaction.getResultingQuantity(),
                 transaction.getCreatedAt()
         );
     }

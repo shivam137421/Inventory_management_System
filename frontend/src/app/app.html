@@ -1,11 +1,39 @@
 <header class="app-header">
   <div class="header-container">
-    <div class="brand-title">StockPilot</div>
-    <nav class="nav-links">
-      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
-      <a routerLink="/products" routerLinkActive="active" class="nav-link">Products</a>
-      <a routerLink="/transactions" routerLinkActive="active" class="nav-link">Transactions</a>
-    </nav>
+    <div style="display: flex; align-items: center; gap: 24px;">
+      <a routerLink="/" class="brand-title" style="text-decoration: none;">StockPilot</a>
+
+      <!-- Authenticated Navigation Links -->
+      <nav *ngIf="authService.currentUser$ | async" class="nav-links">
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
+        <a routerLink="/products" routerLinkActive="active" class="nav-link">Products</a>
+        <a routerLink="/suppliers" routerLinkActive="active" class="nav-link">Suppliers</a>
+        <a routerLink="/purchases" routerLinkActive="active" class="nav-link">Purchases</a>
+        <a routerLink="/sales" routerLinkActive="active" class="nav-link">Sales</a>
+        <a routerLink="/transactions" routerLinkActive="active" class="nav-link">Transactions</a>
+        <a routerLink="/reports" routerLinkActive="active" class="nav-link">Reports</a>
+      </nav>
+    </div>
+
+    <!-- Right Header: User Info / Auth Controls -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <ng-container *ngIf="authService.currentUser$ | async as user; else guestNav">
+        <div style="text-align: right; line-height: 1.2;">
+          <div style="font-size: 13px; font-weight: 600; color: #ffffff;">{{ user.businessName }}</div>
+          <div style="font-size: 11px; color: #aaaaaa;">{{ user.fullName }}</div>
+        </div>
+        <button type="button" class="btn btn-sm btn-secondary" (click)="onLogout()">
+          Sign Out
+        </button>
+      </ng-container>
+
+      <ng-template #guestNav>
+        <div style="display: flex; gap: 8px;">
+          <a routerLink="/login" routerLinkActive="active" class="nav-link">Sign In</a>
+          <a routerLink="/register" class="btn btn-sm btn-primary">Register</a>
+        </div>
+      </ng-template>
+    </div>
   </div>
 </header>
 

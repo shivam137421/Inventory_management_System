@@ -12,12 +12,19 @@ public class TransactionResponse {
     private TransactionType transactionType;
     private Integer quantity;
     private String note;
+    private String referenceType;
+    private Long referenceId;
+    private Integer resultingQuantity;
     private LocalDateTime createdAt;
 
     public TransactionResponse() {
     }
 
     public TransactionResponse(Long id, Long productId, String productName, String sku, TransactionType transactionType, Integer quantity, String note, LocalDateTime createdAt) {
+        this(id, productId, productName, sku, transactionType, quantity, note, null, null, null, createdAt);
+    }
+
+    public TransactionResponse(Long id, Long productId, String productName, String sku, TransactionType transactionType, Integer quantity, String note, String referenceType, Long referenceId, Integer resultingQuantity, LocalDateTime createdAt) {
         this.id = id;
         this.productId = productId;
         this.productName = productName;
@@ -25,6 +32,9 @@ public class TransactionResponse {
         this.transactionType = transactionType;
         this.quantity = quantity;
         this.note = note;
+        this.referenceType = referenceType;
+        this.referenceId = referenceId;
+        this.resultingQuantity = resultingQuantity;
         this.createdAt = createdAt;
     }
 
@@ -82,6 +92,30 @@ public class TransactionResponse {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public String getReferenceType() {
+        return referenceType;
+    }
+
+    public void setReferenceType(String referenceType) {
+        this.referenceType = referenceType;
+    }
+
+    public Long getReferenceId() {
+        return referenceId;
+    }
+
+    public void setReferenceId(Long referenceId) {
+        this.referenceId = referenceId;
+    }
+
+    public Integer getResultingQuantity() {
+        return resultingQuantity;
+    }
+
+    public void setResultingQuantity(Integer resultingQuantity) {
+        this.resultingQuantity = resultingQuantity;
     }
 
     public LocalDateTime getCreatedAt() {

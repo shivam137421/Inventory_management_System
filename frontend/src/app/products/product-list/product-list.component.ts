@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Product, StockStatus } from '../../models/inventory.model';
+import { Product } from '../../models/inventory.model';
 import { ProductService } from '../../services/product.service';
 import { MessageBannerComponent } from '../../shared/message-banner/message-banner.component';
 import { StatusBadgeComponent } from '../../shared/status-badge/status-badge.component';
@@ -82,7 +82,7 @@ import { extractErrorMessage } from '../../core/http-error.helper';
                 <th>Category</th>
                 <th style="text-align: right;">Quantity</th>
                 <th style="text-align: right;">Reorder Level</th>
-                <th style="text-align: right;">Unit Price</th>
+                <th style="text-align: right;">Price</th>
                 <th>Stock Status</th>
                 <th style="text-align: center;">Actions</th>
               </tr>
@@ -90,19 +90,39 @@ import { extractErrorMessage } from '../../core/http-error.helper';
             <tbody>
               <tr *ngFor="let product of filteredProducts">
                 <td><strong>{{ product.sku }}</strong></td>
-                <td>{{ product.name }}</td>
+                <td>
+                  {{ product.name }}
+                  <div *ngIf="product.description" style="font-size: 11px; color: var(--text-muted); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    {{ product.description }}
+                  </div>
+                </td>
                 <td>{{ product.category }}</td>
-                <td style="text-align: right;">{{ product.quantity }}</td>
-                <td style="text-align: right;">{{ product.reorderLevel }}</td>
-                <td style="text-align: right;">{{ product.unitPrice | number:'1.2-2' }}</td>
+                <td style="text-align: right;">
+                  <strong>{{ product.quantity }}</strong>
+                  <span style="font-size: 11px; color: var(--text-muted); margin-left: 2px;">{{ product.unit || 'pcs' }}</span>
+                </td>
+                <td style="text-align: right;">
+                  {{ product.reorderLevel }}
+                  <span style="font-size: 11px; color: var(--text-muted); margin-left: 2px;">{{ product.unit || 'pcs' }}</span>
+                </td>
+                <td style="text-align: right;">
+                  <div>₹{{ product.unitPrice | number:'1.2-2' }}</div>
+                  <div *ngIf="product.purchasePrice != null" style="font-size: 11px; color: var(--text-muted);">
+                    Cost: ₹{{ product.purchasePrice | number:'1.2-2' }}
+                  </div>
+                </td>
                 <td>
                   <app-status-badge [status]="product.status"></app-status-badge>
+                  <span *ngIf="!product.isActive" class="badge" style="background: #e8e8e8; color: #666; margin-left: 4px; font-size: 11px;">
+                    Inactive
+                  </span>
                 </td>
                 <td style="text-align: center;">
-                  <div style="display: inline-flex; gap: 6px;">
+                  <div style="display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
                     <a [routerLink]="['/products', product.id, 'edit']" class="btn btn-sm btn-secondary">Edit</a>
                     <button type="button" class="btn btn-sm btn-secondary" (click)="openStockDialog(product, 'IN')">Stock In</button>
                     <button type="button" class="btn btn-sm btn-secondary" (click)="openStockDialog(product, 'OUT')">Stock Out</button>
+                    <button type="button" class="btn btn-sm btn-secondary" (click)="openStockDialog(product, 'ADJUST')">Adjust</button>
                     <button type="button" class="btn btn-sm btn-danger-outline" (click)="deleteProduct(product)">Delete</button>
                   </div>
                 </td>
@@ -137,7 +157,7 @@ export class ProductListComponent implements OnInit {
   bannerMessage: string | null = null;
 
   selectedProductForStock: Product | null = null;
-  stockActionType: 'IN' | 'OUT' | null = null;
+  stockActionType: 'IN' | 'OUT' | 'ADJUST' | null = null;
 
   constructor(
     private productService: ProductService,
@@ -207,7 +227,7 @@ export class ProductListComponent implements OnInit {
 
     this.productService.deleteProduct(product.id).subscribe({
       next: () => {
-        this.showBanner('success', `Product "${product.name}" was successfully deleted.`);
+        this.showBanner('success', `Product "${product.name}" action completed successfully.`);
         this.loadProducts();
       },
       error: (err) => {
@@ -216,7 +236,7 @@ export class ProductListComponent implements OnInit {
     });
   }
 
-  openStockDialog(product: Product, type: 'IN' | 'OUT'): void {
+  openStockDialog(product: Product, type: 'IN' | 'OUT' | 'ADJUST'): void {
     this.selectedProductForStock = product;
     this.stockActionType = type;
     this.cdr.detectChanges();

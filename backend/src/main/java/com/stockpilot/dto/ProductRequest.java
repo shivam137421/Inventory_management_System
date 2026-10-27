@@ -22,6 +22,9 @@ public class ProductRequest {
     @Size(max = 100, message = "Category must not exceed 100 characters")
     private String category;
 
+    @Size(max = 30, message = "Unit label must not exceed 30 characters")
+    private String unit = "pcs";
+
     @NotNull(message = "Quantity is required")
     @Min(value = 0, message = "Quantity must be greater than or equal to 0")
     private Integer quantity;
@@ -35,16 +38,30 @@ public class ProductRequest {
     @Digits(integer = 10, fraction = 2, message = "Unit price must have at most 2 decimal places")
     private BigDecimal unitPrice;
 
+    @DecimalMin(value = "0.00", message = "Purchase price must be greater than or equal to 0")
+    @Digits(integer = 10, fraction = 2, message = "Purchase price must have at most 2 decimal places")
+    private BigDecimal purchasePrice;
+
+    @Size(max = 1000, message = "Description must not exceed 1000 characters")
+    private String description;
+
     public ProductRequest() {
     }
 
     public ProductRequest(String sku, String name, String category, Integer quantity, Integer reorderLevel, BigDecimal unitPrice) {
+        this(sku, name, category, "pcs", quantity, reorderLevel, unitPrice, null, null);
+    }
+
+    public ProductRequest(String sku, String name, String category, String unit, Integer quantity, Integer reorderLevel, BigDecimal unitPrice, BigDecimal purchasePrice, String description) {
         this.sku = sku;
         this.name = name;
         this.category = category;
+        this.unit = (unit != null && !unit.trim().isEmpty()) ? unit.trim().toLowerCase() : "pcs";
         this.quantity = quantity;
         this.reorderLevel = reorderLevel;
         this.unitPrice = unitPrice;
+        this.purchasePrice = purchasePrice;
+        this.description = description;
     }
 
     public String getSku() {
@@ -71,6 +88,14 @@ public class ProductRequest {
         this.category = category;
     }
 
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = (unit != null && !unit.trim().isEmpty()) ? unit.trim().toLowerCase() : "pcs";
+    }
+
     public Integer getQuantity() {
         return quantity;
     }
@@ -93,5 +118,21 @@ public class ProductRequest {
 
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
+    }
+
+    public BigDecimal getPurchasePrice() {
+        return purchasePrice;
+    }
+
+    public void setPurchasePrice(BigDecimal purchasePrice) {
+        this.purchasePrice = purchasePrice;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

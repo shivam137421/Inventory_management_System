@@ -1,8 +1,8 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../core/api.config';
-import { Product, ProductRequest, StockRequest } from '../models/inventory.model';
+import { Product, ProductRequest, StockRequest, StockAdjustmentRequest } from '../models/inventory.model';
 
 @Injectable({
   providedIn: 'root'
@@ -38,5 +38,9 @@ export class ProductService {
 
   stockOut(id: number, request: StockRequest): Observable<Product> {
     return this.http.post<Product>(`${this.baseUrl}/${id}/stock-out`, request);
+  }
+
+  adjustStock(id: number, request: StockAdjustmentRequest): Observable<Product> {
+    return this.http.post<Product>(`${this.baseUrl}/${id}/adjust`, request);
   }
 }

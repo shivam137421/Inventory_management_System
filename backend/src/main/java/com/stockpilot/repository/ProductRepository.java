@@ -17,11 +17,27 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     boolean existsBySkuIgnoreCaseAndIdNot(String sku, Long id);
 
+    boolean existsByBusinessIdAndSkuIgnoreCase(Long businessId, String sku);
+
+    boolean existsByBusinessIdAndSkuIgnoreCaseAndIdNot(Long businessId, String sku, Long id);
+
     Optional<Product> findBySkuIgnoreCase(String sku);
+
+    Optional<Product> findByIdAndBusinessId(Long id, Long businessId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Product p WHERE p.id = :id")
     Optional<Product> findByIdWithLock(@Param("id") Long id);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Product p WHERE p.id = :id AND p.business.id = :businessId")
+    Optional<Product> findByIdAndBusinessIdWithLock(@Param("id") Long id, @Param("businessId") Long businessId);
+
     List<Product> findAllByOrderByCreatedAtDesc();
+
+    List<Product> findAllByBusinessIdOrderByCreatedAtDesc(Long businessId);
+
+    List<Product> findAllByBusinessIdAndIsActiveTrueOrderByCreatedAtDesc(Long businessId);
+
+    List<Product> findAllByBusinessId(Long businessId);
 }

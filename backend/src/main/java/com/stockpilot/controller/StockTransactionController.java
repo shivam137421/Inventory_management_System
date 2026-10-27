@@ -23,7 +23,9 @@ public class StockTransactionController {
     @GetMapping
     public ResponseEntity<List<TransactionResponse>> getTransactions(
             @RequestParam(required = false) TransactionType type,
-            @RequestParam(required = false) Long productId) {
-        return ResponseEntity.ok(stockTransactionService.getTransactions(type, productId));
+            @RequestParam(required = false) Long productId,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime startDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime endDate) {
+        return ResponseEntity.ok(stockTransactionService.getTransactions(type, productId, startDate, endDate));
     }
 }

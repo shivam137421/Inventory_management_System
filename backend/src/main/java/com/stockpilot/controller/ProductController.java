@@ -2,6 +2,7 @@ package com.stockpilot.controller;
 
 import com.stockpilot.dto.ProductRequest;
 import com.stockpilot.dto.ProductResponse;
+import com.stockpilot.dto.StockAdjustmentRequest;
 import com.stockpilot.dto.StockRequest;
 import com.stockpilot.service.ProductService;
 import jakarta.validation.Valid;
@@ -64,5 +65,10 @@ public class ProductController {
     @PostMapping("/{id}/stock-out")
     public ResponseEntity<ProductResponse> stockOut(@PathVariable Long id, @Valid @RequestBody StockRequest request) {
         return ResponseEntity.ok(productService.stockOut(id, request));
+    }
+
+    @PostMapping("/{id}/adjust")
+    public ResponseEntity<ProductResponse> adjustStock(@PathVariable Long id, @Valid @RequestBody StockAdjustmentRequest request) {
+        return ResponseEntity.ok(productService.adjustStock(id, request));
     }
 }

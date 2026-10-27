@@ -12,13 +12,24 @@ export class TransactionService {
 
   constructor(private http: HttpClient) {}
 
-  getTransactions(type?: TransactionType, productId?: number): Observable<Transaction[]> {
+  getTransactions(
+    type?: TransactionType | string,
+    productId?: number,
+    startDate?: string,
+    endDate?: string
+  ): Observable<Transaction[]> {
     let params = new HttpParams();
     if (type) {
       params = params.set('type', type);
     }
     if (productId) {
       params = params.set('productId', productId.toString());
+    }
+    if (startDate) {
+      params = params.set('startDate', startDate);
+    }
+    if (endDate) {
+      params = params.set('endDate', endDate);
     }
     return this.http.get<Transaction[]>(this.baseUrl, { params });
   }

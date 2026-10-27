@@ -10,9 +10,13 @@ public class ProductResponse {
     private String sku;
     private String name;
     private String category;
+    private String unit;
     private Integer quantity;
     private Integer reorderLevel;
     private BigDecimal unitPrice;
+    private BigDecimal purchasePrice;
+    private String description;
+    private Boolean isActive;
     private StockStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -21,13 +25,21 @@ public class ProductResponse {
     }
 
     public ProductResponse(Long id, String sku, String name, String category, Integer quantity, Integer reorderLevel, BigDecimal unitPrice, StockStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this(id, sku, name, category, "pcs", quantity, reorderLevel, unitPrice, null, null, true, status, createdAt, updatedAt);
+    }
+
+    public ProductResponse(Long id, String sku, String name, String category, String unit, Integer quantity, Integer reorderLevel, BigDecimal unitPrice, BigDecimal purchasePrice, String description, Boolean isActive, StockStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.sku = sku;
         this.name = name;
         this.category = category;
+        this.unit = unit != null ? unit : "pcs";
         this.quantity = quantity;
         this.reorderLevel = reorderLevel;
         this.unitPrice = unitPrice;
+        this.purchasePrice = purchasePrice;
+        this.description = description;
+        this.isActive = isActive != null ? isActive : true;
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -65,6 +77,14 @@ public class ProductResponse {
         this.category = category;
     }
 
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
     public Integer getQuantity() {
         return quantity;
     }
@@ -87,6 +107,30 @@ public class ProductResponse {
 
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
+    }
+
+    public BigDecimal getPurchasePrice() {
+        return purchasePrice;
+    }
+
+    public void setPurchasePrice(BigDecimal purchasePrice) {
+        this.purchasePrice = purchasePrice;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public StockStatus getStatus() {

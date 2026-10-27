@@ -41,6 +41,7 @@ yarn-error.log*
 # Secrets, Environment & Sensitive Files
 .env
 .env.*
+!.env.example
 *.env
 *.local
 *.secret
@@ -63,3 +64,8 @@ backend/src/main/resources/application-local.properties
 # Documentation & Scratch (excluded from git push per specification)
 others/
 scratch/
+
+# Markdown exclusion - do not track or push any .md files except root README.md
+*.md
+**/*.md
+!/README.md
